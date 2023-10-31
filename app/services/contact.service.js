@@ -7,29 +7,40 @@ class ContactService {
     
     extractContactData(payload) {
         const contact = {
-            name : payload.name,
-            email : payload.email,
-            address: payload.address,
-            phone : payload.phone,
-            favorite: payload.favorite,
-        }
-        // remove undefine fields
-        Objects.keys(contact).forEach(
-            (key) => contact[key] === undefined && delete contact[key]
-        )
-        return contact    
-    }
-    
-    async create(payload) {
-        console.log(req.body)
+          name: payload.name,
+          email: payload.email,
+          address: payload.address,
+          phone: payload.phone,
+          favorite: payload.favorite,
+        };
+      
+        // Xóa các trường không xác định (undefined)
+        Object.keys(contact).forEach((key) => contact[key] === undefined && delete contact[key]);
+      
+        return contact;
+      }
+      
+      async create(payload) {
         const contact = this.extractContactData(payload);
-        const result = await this.Contact.findOneAndUpdate(
-            contact,
-            { $set: { favorite: contact.favorite === true } },
-            { returnDocument: "after", upsert: true }
-        );
-        return result.value;
-    }
+      
+        const update = {
+          $set: { favorite: contact.favorite === true },
+        };
+      
+        const options = {
+          returnOriginal: false,
+          upsert: true,
+        };
+      
+        try {
+          const result = await this.Contact.findOneAndUpdate(contact, update, options);
+          return result.value;
+        } catch (error) {
+          // Xử lý lỗi tạo liên hệ
+          throw new Error("An error occurred while creating the contact");
+        }
+      }
+        
 
     async find(filter) {
         const cursor = await this.Contact.find(filter)

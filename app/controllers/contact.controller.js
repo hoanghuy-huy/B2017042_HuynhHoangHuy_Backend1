@@ -5,17 +5,21 @@ const MongoDB = require("../utils/mongodb.util")
 
 
 exports.create = async (req, res, next) => {
-  if (!req.body?.name) {
-    return next(new ApiError(400, "Name cannot be empty"));
-  }
-  try {
-    const contactService = new ContactService(MongoDB.client)
-    const doc = await contactService.create(req.body)
-    return res.send(doc);
-  } catch (error) {
-    return next(new ApiError(500, "An error occurred while creating the contact"));
-  }
-};
+    try {
+      if (!req.body?.name) {
+        throw new ApiError(400, "Name cannot be empty");
+      }
+  
+      const contactService = new ContactService(MongoDB.client);
+      const doc = await contactService.create(req.body);
+      return res.send(doc);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return next(error);
+      }
+      return next(new ApiError(500, "An error occurred while creating the contact"));
+    }
+  };
 
   
 exports.findAll = async( req, res, next) => {
